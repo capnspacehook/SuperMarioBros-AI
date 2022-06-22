@@ -24,6 +24,8 @@ from genetic_algorithm.selection import elitism_selection, tournament_selection,
 from genetic_algorithm.crossover import simulated_binary_crossover as SBX
 from genetic_algorithm.mutation import gaussian_mutation
 
+from console import Console
+
 normal_font = QtGui.QFont('Times', 11, QtGui.QFont.Normal)
 font_bold = QtGui.QFont('Times', 11, QtGui.QFont.Bold)
 
@@ -857,6 +859,10 @@ if __name__ == "__main__":
     if args.config:
         config = Config(args.config)
 
-    app = QtWidgets.QApplication(sys.argv)
-    window = MainWindow(config)
-    sys.exit(app.exec_())
+    if args.no_display:
+        console = Console(args, config)
+        console.run()
+    else:
+        app = QtWidgets.QApplication(sys.argv)
+        window = MainWindow(config)
+        sys.exit(app.exec_())
