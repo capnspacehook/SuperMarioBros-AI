@@ -7,6 +7,7 @@ from neural_network import *
 from mario import Mario
 from config import Config
 
+
 class NeuralNetworkViz(QtWidgets.QWidget):
     def __init__(self, parent, mario: Mario, size, config: Config):
         super().__init__(parent)
@@ -24,11 +25,11 @@ class NeuralNetworkViz(QtWidgets.QWidget):
         # Set all neuron locations for layer 0 (Input) to be at the same point.
         # The reason I do this is because the number of inputs can easily become too many to show on the screen.
         # For this reason it is easier to not explicitly show the input nodes and rather show the bounding box of the rectangle.
-        self.x_offset = 150 + 16//2*self.tile_size[0] + 5
-        self.y_offset = 5 + 15*self.tile_size[1] + 5
+        self.x_offset = 150 + 16 // 2 * self.tile_size[0] + 5
+        self.y_offset = 5 + 15 * self.tile_size[1] + 5
         for nid in range(l[0]):
             t = (0, nid)
-            
+
             self.neuron_locations[t] = (self.x_offset, self.y_offset)
 
         self.show()
@@ -40,7 +41,7 @@ class NeuralNetworkViz(QtWidgets.QWidget):
         painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         painter.setPen(QPen(Qt.black, 1.0, Qt.SolidLine))
         horizontal_space = 20  # Space between Nodes within the same layer
-        
+
         layer_nodes = self.mario.network.layer_nodes
 
         default_offset = self.x_offset
@@ -51,22 +52,22 @@ class NeuralNetworkViz(QtWidgets.QWidget):
         out = self.mario.network.feed_forward(inputs)
 
         active_outputs = np.where(out > 0.5)[0]
-        max_n = self.size[0] // (2* self.neuron_radius + horizontal_space)
-        
+        max_n = self.size[0] // (2 * self.neuron_radius + horizontal_space)
+
         # Draw nodes
         for layer, num_nodes in enumerate(layer_nodes[1:], 1):
-            h_offset = (((max_n - num_nodes)) * (2*self.neuron_radius + horizontal_space))/2
+            h_offset = (((max_n - num_nodes)) * (2 * self.neuron_radius + horizontal_space)) / 2
             activations = None
             if layer > 0:
-                activations = self.mario.network.params['A' + str(layer)]
+                activations = self.mario.network.params["A" + str(layer)]
 
             for node in range(num_nodes):
-                x_loc = node * (self.neuron_radius*2 + horizontal_space) + h_offset
+                x_loc = node * (self.neuron_radius * 2 + horizontal_space) + h_offset
                 y_loc = v_offset
                 t = (layer, node)
                 if t not in self.neuron_locations:
                     self.neuron_locations[t] = (x_loc + self.neuron_radius, y_loc)
-                
+
                 painter.setBrush(QtGui.QBrush(Qt.white, Qt.NoBrush))
                 # Input layer
                 if layer == 0:
@@ -78,17 +79,21 @@ class NeuralNetworkViz(QtWidgets.QWidget):
                 # Hidden layers
                 elif layer > 0 and layer < len(layer_nodes) - 1:
                     saturation = max(min(activations[node, 0], 1.0), 0.0)
-                    painter.setBrush(QtGui.QBrush(QtGui.QColor.fromHslF(125/239, saturation, 120/240)))
+                    painter.setBrush(QtGui.QBrush(QtGui.QColor.fromHslF(125 / 239, saturation, 120 / 240)))
                 # Output layer
                 elif layer == len(layer_nodes) - 1:
-                    text = ('U', 'D', 'L', 'R', 'A', 'B')[node]
-                    painter.drawText(h_offset + node * (self.neuron_radius*2 + horizontal_space), v_offset + 2*self.neuron_radius + 2*self.neuron_radius, text)
+                    text = ("U", "D", "L", "R", "A", "B")[node]
+                    painter.drawText(
+                        h_offset + node * (self.neuron_radius * 2 + horizontal_space),
+                        v_offset + 2 * self.neuron_radius + 2 * self.neuron_radius,
+                        text,
+                    )
                     if node in active_outputs:
                         painter.setBrush(QtGui.QBrush(Qt.green))
                     else:
                         painter.setBrush(QtGui.QBrush(Qt.white))
 
-                painter.drawEllipse(x_loc, y_loc, self.neuron_radius*2, self.neuron_radius*2)
+                painter.drawEllipse(x_loc, y_loc, self.neuron_radius * 2, self.neuron_radius * 2)
             v_offset += 150
 
         # Reset horizontal offset for the weights
@@ -97,7 +102,7 @@ class NeuralNetworkViz(QtWidgets.QWidget):
         # Draw weights
         # For each layer starting at 1
         for l in range(2, len(layer_nodes)):
-            weights = self.mario.network.params['W' + str(l)]
+            weights = self.mario.network.params["W" + str(l)]
             prev_nodes = weights.shape[1]
             curr_nodes = weights.shape[0]
             # For each node from the previous layer
@@ -111,17 +116,17 @@ class NeuralNetworkViz(QtWidgets.QWidget):
                     else:
                         painter.setPen(QtGui.QPen(Qt.red))
                     # Grab locations of the nodes
-                    start = self.neuron_locations[(l-1, prev_node)]
+                    start = self.neuron_locations[(l - 1, prev_node)]
                     end = self.neuron_locations[(l, curr_node)]
                     # Offset start[0] by diameter of circle so that the line starts on the right of the circle
-                    painter.drawLine(start[0], start[1] + self.neuron_radius*2, end[0], end[1])
-        
+                    painter.drawLine(start[0], start[1] + self.neuron_radius * 2, end[0], end[1])
+
         # Draw line straight down
         color = QColor(255, 0, 217)
         painter.setPen(QPen(color, 3.0, Qt.SolidLine))
         painter.setBrush(QBrush(Qt.NoBrush))
 
-        x_start = 5 + 150 + (16/2 * self.tile_size[0])
+        x_start = 5 + 150 + (16 / 2 * self.tile_size[0])
         y_start = 5 + (15 * self.tile_size[1])
         x_end = x_start
         y_end = y_start + 5 + (2 * self.neuron_radius)
@@ -132,4 +137,3 @@ class NeuralNetworkViz(QtWidgets.QWidget):
         for nid in range(layer_nodes[1]):
             start = self.neuron_locations[(1, nid)]
             painter.drawLine(start[0], start[1], x_end, y_end)
-        
